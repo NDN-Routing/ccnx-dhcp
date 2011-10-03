@@ -1,0 +1,47 @@
+IN ORDER TO COMPILE:
+Edit the variable CCNX_DIR in the Makefile to the location of your already compiled ccnx-release. 
+
+README:
+This allows a server to propagate all known faces to anyone in the same LAN. The clients will then act like servers themselves so anyone that knows something can reply to those who ask.
+
+DHCP group: 224.0.23.170
+DHCP port: 60006
+DHCP prefix: ccnx:/local/dhcp
+DHCP content name: ccnx:/local/dhcp/content
+DHCP configuration file: specified by -f parameter, or ./ccn_dhcp.config by default
+
+configuration format:
+There should be a three tuple per line separated by some whitespaces
+(name-prefix, host, port)
+if the line starts with '#' it is considered a comment and ignored
+if the line starts with '!' it is a fallback entry -- if you get no response the dhcpnode will setup these instead.
+look at the file 'ccn_dhcp.config' for an example
+
+DHCP Node:
+1. Join DHCP group
+    1) join multicast group
+    2) create a new face towards the DHCP group and port (the new face uses UDP)
+    3) bind DHCP prefix to this new face
+2. (Server is S, Client is C)
+    S1) read DHCP configuration file (all entries of the config file are sent to the requesting node in one message)
+    C1) get a response from the server (with all entries to enter) or read the fallback entries from the config_file
+    2) construct DHCP entries into a ccnx message (with DHCP content name) and send to local ccnd (a new entry "CCN_DTAG_DHCPContent = 115" is added to enum ccn_dtag)
+    C3)For each forwarding entry (with prefix, host and port):
+        1) create a new face to the host and port (the new face uses UDP)
+        2) bind the prefix to the face 
+3. Now both the Server and Client will respond with all the entries that is known to them.
+
+usage can be asked by passing -h
+but typical usage will be:
+#for primary server
+ccndhcpnode -s [-f config_file]
+#for everyone else
+ccndhcpnode
+
+notes:
+If you want to get rid of the entries you will have to kill ccndhcpnode that is running as the server (in the same subnet) and then wait for the data to become stale.
+Multicast needs to be enabled. it is turned on by default by linux kernel.
+
+TODO:
+Scheduled updates to update faces when the lease expires (leases now are forever)
+Have a check that only allows certain signers entries to be used.
