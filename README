@@ -2,7 +2,7 @@ IN ORDER TO COMPILE:
 Edit the variable CCNX_DIR in the Makefile to the location of your already compiled ccnx-release. 
 
 README:
-This allows a server to propagate all known faces to anyone in the same LAN. The clients will then act like servers themselves so anyone that knows something can reply to those who ask.
+This allows a server to propagate all known faces (from the config file) to anyone in the same LAN. The clients will then act like servers themselves so anyone that knows something can reply to those who ask as long as the data is not stale.
 
 DHCP group: 224.0.23.170
 DHCP port: 60006
