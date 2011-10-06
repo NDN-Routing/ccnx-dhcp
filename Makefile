@@ -1,17 +1,7 @@
 CC = gcc
 LD = gcc -pipe
 
-BDECFLAGS=      -W -Wall -ansi -pedantic -Wbad-function-cast -Wcast-align \
-                -Wcast-qual -Wchar-subscripts -Winline \
-                -Wmissing-prototypes -Wnested-externs -Wpointer-arith \
-                -Wredundant-decls -Wshadow -Wstrict-prototypes -Wwrite-strings \
-                -std=c99 -Wextra
-
-#STRIP=touch
-#CFLAGS = -pipe -g3
-#CFLAGS += $(BDECFLAGS)
-
-STRIP=strip
+STRIP = strip
 CFLAGS = -pipe
 
 CCNX_DIR = ~/ccnx

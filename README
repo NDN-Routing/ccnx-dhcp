@@ -29,12 +29,13 @@ DHCP Node:
     C3)For each forwarding entry (with prefix, host and port):
         1) create a new face to the host and port (the new face uses UDP)
         2) bind the prefix to the face 
-3. Now both the Server and Client will respond with all the entries that is known to them.
+S3. The Server will respond with all the entries that is known to them.
+C3. The Client will exit.
 
 usage can be asked by passing -h
 but typical usage will be:
 #for primary server
-ccndhcpnode -s [-f config_file]
+ccndhcpnode -s [-f config_file] #for ease this is automatically run with ccndhcpserver
 #for everyone else
 ccndhcpnode
 

@@ -294,8 +294,8 @@ struct ccn_face_instance *construct_face(const unsigned char *ccndid, size_t ccn
 
     res = getaddrinfo(address, port, &hints, &raddrinfo);
     if (res != 0 || raddrinfo == NULL) {
-        fprintf(stderr, "Error: getaddrinfo\n");
-        return NULL;
+        fprintf(stderr, "Error: getaddrinfo, make sure supplied address and port are valid; %s:%s\n", address, port);
+        exit(1);
     }
 
     res = getnameinfo(raddrinfo->ai_addr, raddrinfo->ai_addrlen,
@@ -304,8 +304,8 @@ struct ccn_face_instance *construct_face(const unsigned char *ccndid, size_t ccn
             NI_NUMERICHOST | NI_NUMERICSERV);
     freeaddrinfo(raddrinfo);
     if (res != 0) {
-        fprintf(stderr, "Error: getnameinfo\n");
-        return NULL;
+        fprintf(stderr, "Error: getnameinfo, make sure supplied address and port are valid; %s:%s\n", address, port);
+        exit(1);
     }
 
     fi->store = store;
@@ -681,7 +681,7 @@ int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
 
     res = ccn_get(h, name, NULL, msecs, resultbuf, &pcobuf, NULL, 0);
     if (res < 0) {
-        fprintf(stderr, "Error getting DHCP content, %d\n",res);
+        fprintf(stderr, "Error getting DHCP content\n");
         ccn_charbuf_destroy(&name);
         ccn_charbuf_destroy(&resultbuf);
         return -1;
@@ -958,6 +958,9 @@ int main(int argc, char **argv)
             entry_count = read_config_file(config_file, new, 0);
         }
         update_faces(h, mydata, new, entry_count, 1);
+        print_entries(mydata);
+        ccn_destroy(&h);
+        exit(0);
     }
 
     print_entries(mydata);
@@ -976,5 +979,5 @@ int main(int argc, char **argv)
     }
 
     ccn_destroy(&h);
-    exit(res < 0);
+    exit(0);
 }
