@@ -5,7 +5,7 @@ README:
 This allows a server to propagate all known faces (from the config file) to anyone in the same LAN. The clients will then act like servers themselves so anyone that knows something can reply to those who ask as long as the data is not stale.
 
 DHCP group: 224.0.23.170
-DHCP port: 60006
+DHCP port: 59695
 DHCP prefix: ccnx:/local/dhcp
 DHCP content name: ccnx:/local/dhcp/content
 DHCP configuration file: specified by -f parameter, or ./ccn_dhcp.config by default
@@ -16,6 +16,9 @@ There should be a three tuple per line separated by some whitespaces
 if the line starts with '#' it is considered a comment and ignored
 if the line starts with '!' it is a fallback entry -- if you get no response the dhcpnode will setup these instead.
 look at the file 'ccn_dhcp.config' for an example
+
+The client will only learn the regular routes from dhcp server (those with nothing preceding the start of the line).
+Right now faces are setup using UDP, an option for changing this will be available soon.
 
 DHCP Node:
 1. Join DHCP group
