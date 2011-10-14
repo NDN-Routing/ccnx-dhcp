@@ -8,15 +8,15 @@ DHCP group: 224.0.23.170
 DHCP port: 59695
 DHCP prefix: ccnx:/local/dhcp
 DHCP content name: ccnx:/local/dhcp/content
-DHCP configuration file: specified by -f parameter, or ./ccn_dhcp.config by default
+DHCP configuration file: specified by -f parameter, or ./ccn_dhcp_server.conf and ./ccn_dhcp_client.conf by default depending on usage
 
 configuration format:
 There should be a three tuple per line separated by some whitespaces
 (name-prefix, host, port)
 if the line starts with '#' it is considered a comment and ignored
-if the line starts with '!' it is a fallback entry -- if you get no response the dhcpnode will setup these instead (only useful for clients).
+if the line starts with '!' it is a default entry -- if you get no response the dhcpnode will setup these instead (only useful for clients).
 The server only sends out the regular routes (those with nothing preceding the start of the line).
-look at the file 'ccn_dhcp.config' for an example
+Look at the files 'ccn_dhcp_server.conf' and 'ccn_dhcp_client.conf' for examples
 
 Right now faces are setup using UDP, an option for changing this will be available soon.
 
@@ -38,7 +38,7 @@ C3. The Client will exit.
 usage can be asked by passing -h
 but typical usage will be:
 #for primary server
-ccndhcpnode -s [-f config_file] #for ease this is automatically run with ccndhcpserver
+ccndhcpserver
 #for everyone else
 ccndhcpnode
 

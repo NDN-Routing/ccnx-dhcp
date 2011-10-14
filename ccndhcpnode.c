@@ -35,7 +35,8 @@
 
 #define CCN_DHCP_URI "ccnx:/local/dhcp"
 #define CCN_DHCP_CONTENT_URI "ccnx:/local/dhcp/content"
-#define CCN_DHCP_CONFIG "ccn_dhcp.config"
+#define CCN_DHCP_CONFIG "ccn_dhcp_server.conf"
+#define CCN_DHCP_CONFIT_CLIENT "ccn_dhcp_client.conf"  
 #define CCN_DHCP_ADDR "224.0.23.170"
 #define CCN_DHCP_PORT "59695"
 //#define CCN_DHCP_LIFETIME ((~0U) >> 1) don't use this... bad
@@ -873,12 +874,13 @@ incoming_interest(
 int main(int argc, char **argv)
 {
     struct ccn *h = NULL;
-    const char *config_file = CCN_DHCP_CONFIG;
+    const char *config_file = CCN_DHCP_CONFIG_CLIENT;
     struct ccn_charbuf *name = ccn_charbuf_create();
     int server_add_faces = 0;
     int entry_count = 0;
     int fresh_secs = 60; //set it to 1 min, max is 2146 secs
     int res;
+    int set_config_file = 0;
     struct mydata *mydata;
     struct ccn_dhcp_entry new_val = {0};
     struct ccn_dhcp_entry *new = &new_val;
@@ -897,6 +899,7 @@ int main(int argc, char **argv)
     while ((res = getopt(argc, argv, "f:t:dush")) != -1) {
         switch (res) {
             case 'f':
+                set_config_file = 1;
                 config_file = optarg;
                 break;
             case 't':
@@ -906,6 +909,8 @@ int main(int argc, char **argv)
                 mydata->debug_flag = 1;
                 break;
             case 's':
+                if(set_config_file == 0)
+                    config_file = CCN_DHCP_CONFIG;
                 mydata->is_server = 1;
                 break;
             case 'u':
