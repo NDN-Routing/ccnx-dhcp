@@ -14,10 +14,10 @@ configuration format:
 There should be a three tuple per line separated by some whitespaces
 (name-prefix, host, port)
 if the line starts with '#' it is considered a comment and ignored
-if the line starts with '!' it is a fallback entry -- if you get no response the dhcpnode will setup these instead.
+if the line starts with '!' it is a fallback entry -- if you get no response the dhcpnode will setup these instead (only useful for clients).
+The server only sends out the regular routes (those with nothing preceding the start of the line).
 look at the file 'ccn_dhcp.config' for an example
 
-The client will only learn the regular routes from dhcp server (those with nothing preceding the start of the line).
 Right now faces are setup using UDP, an option for changing this will be available soon.
 
 DHCP Node:
