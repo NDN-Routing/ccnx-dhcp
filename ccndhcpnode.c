@@ -820,7 +820,7 @@ void print_entries(struct mydata *mydata){
         int x;
         for(x=0; x < mydata->num_entries; x++){
             current_new = current_new->next;
-            printf("\t%d: %s\n",x , ccn_charbuf_as_string(current_new->name_prefix));
+            printf("\t%d: %s %s %s\n",x , ccn_charbuf_as_string(current_new->name_prefix), current_new->address, current_new->port);
         }
     }
 }
