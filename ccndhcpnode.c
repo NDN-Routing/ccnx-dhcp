@@ -538,11 +538,12 @@ static void usage(const char *progname)
             "%s [-hdus] [-t freshness_seconds] [-f config_file]\n"
             "\n"
             "\t-h displays this help information\n"
-            "\t-d logs some info to stdout\n"
+            "\t-d toggle logging some info to stdout\n"
             "\t-u flag to allow the server to add the entries from the config file (default is not)\n"
             "\t-s signifies that this is node starts as a server\n"
+            "\t-c set the client timeout for reception of dhcp records\n"
             "\t-t sets the stale timeout of the dhcp records ContentObjects (default: 60)\n"
-            "\t-f change the defalut config file name"
+            "\t-f change the default config file name"
             "\t./ccn_dhcp.config is read by default if no config file is specified and the node starts as a server\n"
             , progname);
     exit(1);
@@ -601,8 +602,15 @@ int read_config_file(const char *filename, struct ccn_dhcp_entry *tail, int norm
         de->store = NULL;
 
         host = strtok_r(NULL, seps, &last);
+        if(host == NULL){
+            fprintf(stderr,"Error in config file %s, look at examples!\n", filename);
+            exit(-4);
+        }
         port = strtok_r(NULL, seps, &last);
-
+        if(port == NULL){
+            fprintf(stderr,"Error in config file %s, look at examples!\n", filename);
+            exit(-4);
+        }
         de->name_prefix = ccn_charbuf_create();
         res = ccn_name_from_uri(de->name_prefix, uri);
         if (res < 0) {
@@ -682,7 +690,6 @@ int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
 
     res = ccn_get(h, name, NULL, msecs, resultbuf, &pcobuf, NULL, 0);
     if (res < 0) {
-        fprintf(stderr, "Error getting DHCP content\n");
         ccn_charbuf_destroy(&name);
         ccn_charbuf_destroy(&resultbuf);
         return -1;
@@ -808,10 +815,9 @@ incoming_content(
 }
 
 void print_entries(struct mydata *mydata){
-    if(mydata->debug_flag == 1){
+    if((mydata->debug_flag == 1 && mydata->is_server == 1)||(mydata->debug_flag == 0 && mydata->is_server == 0)){
         struct ccn_dhcp_entry *current_new = mydata->entries;
         int x;
-        printf("We are printing entries now (%d):\n", mydata->num_entries);
         for(x=0; x < mydata->num_entries; x++){
             current_new = current_new->next;
             printf("\t%d: %s\n",x , ccn_charbuf_as_string(current_new->name_prefix));
@@ -881,6 +887,7 @@ int main(int argc, char **argv)
     int fresh_secs = 60; //set it to 1 min, max is 2146 secs
     int res;
     int set_config_file = 0;
+    int client_timeout = 8000;
     struct mydata *mydata;
     struct ccn_dhcp_entry new_val = {0};
     struct ccn_dhcp_entry *new = &new_val;
@@ -896,7 +903,7 @@ int main(int argc, char **argv)
     mydata->is_server = 0;
 
     //process args
-    while ((res = getopt(argc, argv, "f:t:dush")) != -1) {
+    while ((res = getopt(argc, argv, "f:t:c:dush")) != -1) {
         switch (res) {
             case 'f':
                 set_config_file = 1;
@@ -905,6 +912,9 @@ int main(int argc, char **argv)
             case 't':
                 fresh_secs = atoi(optarg);
                 break;
+            case 'c':
+                 client_timeout = atoi(optarg);
+                 break;
             case 'd':
                 mydata->debug_flag = 1;
                 break;
@@ -957,9 +967,10 @@ int main(int argc, char **argv)
     }
     else{
         //default is to wait for a response for 8 seconds
-        entry_count = get_dhcp_content(h, new, 8000);
-        if(entry_count == -1){
+        entry_count = get_dhcp_content(h, new, client_timeout);
+        if(entry_count < 1){
             //There was an error getting the content so we are going to fallback
+            printf("No response, using client default entries\n");
             entry_count = read_config_file(config_file, new, 0);
         }
         update_faces(h, mydata, new, entry_count, 1);
