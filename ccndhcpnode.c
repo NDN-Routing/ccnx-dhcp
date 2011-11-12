@@ -34,7 +34,6 @@
 
 
 #define CCN_DHCP_URI "ccnx:/local/dhcp"
-#define CCN_DHCP_CONTENT_URI "ccnx:/local/dhcp/content"
 #define CCN_DHCP_CONFIG "ccn_dhcp_server.conf"
 #define CCN_DHCP_CONFIG_CLIENT "ccn_dhcp_client.conf"  
 #define CCN_DHCP_ADDR "224.0.23.170"
@@ -50,6 +49,14 @@ struct ccn_dhcp_entry {
     struct ccn_charbuf *store;
     struct ccn_dhcp_entry *next;
 };
+
+void dhcp_debug_fns(const char *str){
+#ifdef DEBUG
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    fprintf(stderr, "%d.%06d: %s", (int)t.tv_sec, (unsigned)t.tv_usec, str);
+#endif
+}
 
 void ccndhcp_warn(int lineno, const char *format, ...)
 {
@@ -106,6 +113,9 @@ int register_prefix(struct ccn *h, struct ccn_charbuf *local_scope_template,
         struct ccn_charbuf *no_name, struct ccn_charbuf *name_prefix,
         struct ccn_face_instance *face_instance)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ register_prefix\n");
+#endif
     struct ccn_charbuf *temp = NULL;
     struct ccn_charbuf *resultbuf = NULL;
     struct ccn_charbuf *signed_info = NULL;
@@ -161,6 +171,9 @@ int register_prefix(struct ccn *h, struct ccn_charbuf *local_scope_template,
     ccn_charbuf_destroy(&name);
     ccn_charbuf_destroy(&prefixreg);
 
+#ifdef DEBUG
+    dhcp_debug_fns("register_prefix }\n");
+#endif
     return res;
 
 cleanup:
@@ -171,6 +184,9 @@ cleanup:
     ccn_charbuf_destroy(&name);
     ccn_charbuf_destroy(&prefixreg);
 
+#ifdef DEBUG
+    dhcp_debug_fns("register_prefix }\n");
+#endif
     return -1;
 }
 
@@ -181,6 +197,9 @@ cleanup:
 struct ccn_face_instance *create_face(struct ccn *h, struct ccn_charbuf *local_scope_template,
         struct ccn_charbuf *no_name, struct ccn_face_instance *face_instance)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ ccn_face_instance\n");
+#endif
     struct ccn_charbuf *newface = NULL;
     struct ccn_charbuf *signed_info = NULL;
     struct ccn_charbuf *temp = NULL;
@@ -223,6 +242,9 @@ struct ccn_face_instance *create_face(struct ccn *h, struct ccn_charbuf *local_s
     ccn_charbuf_destroy(&resultbuf);
     ccn_charbuf_destroy(&name);
 
+#ifdef DEBUG
+    dhcp_debug_fns("ccn_face_face_instance }\n");
+#endif
     return new_face_instance;
 
 cleanup:
@@ -232,6 +254,9 @@ cleanup:
     ccn_charbuf_destroy(&resultbuf);
     ccn_charbuf_destroy(&name);
 
+#ifdef DEBUG
+    dhcp_debug_fns("ccn_face_instance }\n");
+#endif
     return NULL;
 }
 
@@ -241,6 +266,9 @@ cleanup:
 static int get_ccndid(struct ccn *h, struct ccn_charbuf *local_scope_template,
         const unsigned char *ccndid)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ get_ccndid\n");
+#endif
     struct ccn_charbuf *name = NULL;
     struct ccn_charbuf *resultbuf = NULL;
     struct ccn_parsed_ContentObject pcobuf = {0};
@@ -272,6 +300,9 @@ static int get_ccndid(struct ccn *h, struct ccn_charbuf *local_scope_template,
     ccn_charbuf_destroy(&name);
     ccn_charbuf_destroy(&resultbuf);
 
+#ifdef DEBUG
+    dhcp_debug_fns("get_ccndid }\n");
+#endif
     return (ccndid_result_size);
 }
 
@@ -282,6 +313,9 @@ static int get_ccndid(struct ccn *h, struct ccn_charbuf *local_scope_template,
 struct ccn_face_instance *construct_face(const unsigned char *ccndid, size_t ccndid_size,
         const char *address, const char *port)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ get_face_instance\n");
+#endif
     struct ccn_face_instance *fi = calloc(1, sizeof(*fi));
     char rhostnamebuf[NI_MAXHOST];
     char rhostportbuf[NI_MAXSERV];
@@ -328,6 +362,9 @@ struct ccn_face_instance *construct_face(const unsigned char *ccndid, size_t ccn
     fi->ccnd_id = ccndid;
     fi->ccnd_id_size = ccndid_size;
 
+#ifdef DEBUG
+    dhcp_debug_fns("get_face_instance }\n");
+#endif
     return fi;
 }
 
@@ -337,6 +374,9 @@ struct ccn_face_instance *construct_face(const unsigned char *ccndid, size_t ccn
 void init_data(struct ccn_charbuf *local_scope_template,
         struct ccn_charbuf *no_name)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ init_data\n");
+#endif
     ccn_charbuf_append_tt(local_scope_template, CCN_DTAG_Interest, CCN_DTAG);
     ccn_charbuf_append_tt(local_scope_template, CCN_DTAG_Name, CCN_DTAG);
     ccn_charbuf_append_closer(local_scope_template);    /* </Name> */
@@ -344,6 +384,9 @@ void init_data(struct ccn_charbuf *local_scope_template,
     ccn_charbuf_append_closer(local_scope_template);    /* </Interest> */
 
     ccn_name_init(no_name);
+#ifdef DEBUG
+    dhcp_debug_fns("init_data }\n");
+#endif
 }
 
 /*
@@ -351,6 +394,9 @@ void init_data(struct ccn_charbuf *local_scope_template,
  */
 int add_new_face(struct ccn *h, struct ccn_charbuf *prefix, const char *address, const char *port)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ add_new_face\n");
+#endif
     struct ccn_charbuf *local_scope_template = ccn_charbuf_create();
     struct ccn_charbuf *no_name = ccn_charbuf_create();
     unsigned char ccndid_storage[32] = {0};
@@ -386,6 +432,9 @@ int add_new_face(struct ccn *h, struct ccn_charbuf *prefix, const char *address,
     ccn_face_instance_destroy(&fi);
     ccn_face_instance_destroy(&nfi);
 
+#ifdef DEBUG
+    dhcp_debug_fns("add_new_face }\n");
+#endif
     return 0;
 
 cleanup:
@@ -394,6 +443,9 @@ cleanup:
     ccn_face_instance_destroy(&fi);
     ccn_face_instance_destroy(&nfi);
 
+#ifdef DEBUG
+    dhcp_debug_fns("add_new_face }\n");
+#endif
     return -1;
 }
 
@@ -402,6 +454,9 @@ cleanup:
  */
 int join_dhcp_group(struct ccn *h)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ join_dhcp_group\n");
+#endif
     int res;
     struct ccn_charbuf *prefix = ccn_charbuf_create();
 
@@ -410,21 +465,33 @@ int join_dhcp_group(struct ccn *h)
 
     ccn_charbuf_destroy(&prefix);
 
+#ifdef DEBUG
+    dhcp_debug_fns("join_dhcp_group }\n");
+#endif
     return res;
 }
 
 void ccn_dhcp_entry_destroy(struct ccn_dhcp_entry **de)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ ccn_dhcp_entry_destroy\n");
+#endif
     if (*de != NULL) {
         ccn_charbuf_destroy(&(*de)->name_prefix);
         ccn_charbuf_destroy(&(*de)->store);
         free(*de);
         *de = NULL;
     }
+#ifdef DEBUG
+    dhcp_debug_fns("ccn_dhcp_entry_destroy }\n");
+#endif
 }
 
 void ccn_dhcp_content_destroy(struct ccn_dhcp_entry *head)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ ccn_dhcp_content_destroy\n");
+#endif
     struct ccn_dhcp_entry *de = head;
     struct ccn_dhcp_entry *next;
 
@@ -433,10 +500,16 @@ void ccn_dhcp_content_destroy(struct ccn_dhcp_entry *head)
         ccn_dhcp_entry_destroy(&de);
         de = next;
     }
+#ifdef DEBUG
+    dhcp_debug_fns("ccn_dhcp_content_destroy }\n");
+#endif
 }
 
 int ccn_dhcp_content_parse(const unsigned char *p, size_t size, struct ccn_dhcp_entry *tail)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ ccn_dhcp_content_parse\n");
+#endif
     struct ccn_buf_decoder decoder;
     struct ccn_buf_decoder *d = ccn_buf_decoder_start(&decoder, p, size);
     int i;
@@ -489,11 +562,17 @@ int ccn_dhcp_content_parse(const unsigned char *p, size_t size, struct ccn_dhcp_
     if (d->decoder.index != size || !CCN_FINAL_DSTATE(d->decoder.state))
         ccn_dhcp_content_destroy(tail->next);
 
+#ifdef DEBUG
+    dhcp_debug_fns("ccn_dhcp_content_parse }\n");
+#endif
     return count;
 }
 
 int ccnb_append_dhcp_content(struct ccn_charbuf *c, int count, const struct ccn_dhcp_entry *head)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ ccnb_append_dhcp_content\n");
+#endif
     int res;
     int i;
     const struct ccn_dhcp_entry *de = head;
@@ -520,6 +599,9 @@ int ccnb_append_dhcp_content(struct ccn_charbuf *c, int count, const struct ccn_
     }
 
     res |= ccnb_element_end(c);
+#ifdef DEBUG
+    dhcp_debug_fns("ccnb_append_dhcp_content }\n");
+#endif
     return res;
 }
 
@@ -551,6 +633,9 @@ static void usage(const char *progname)
 
 int read_config_file(const char *filename, struct ccn_dhcp_entry *tail, int normal)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ read_config_file\n");
+#endif
     char *uri;
     char *host;
     char *port;
@@ -626,19 +711,25 @@ int read_config_file(const char *filename, struct ccn_dhcp_entry *tail, int norm
 
     fclose(cfg);
 
+#ifdef DEBUG
+    dhcp_debug_fns("read_config_file }\n");
+#endif
     return count;
 }
 
 /* Publish DHCP content */
 int put_dhcp_content(struct ccn *h, int fresh_seconds, int entry_count, struct ccn_dhcp_entry *de)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ put_dhcp_content\n");
+#endif
     struct ccn_charbuf *name = ccn_charbuf_create();
     struct ccn_charbuf *resultbuf = ccn_charbuf_create();
     struct ccn_signing_params sp = CCN_SIGNING_PARAMS_INIT;
     struct ccn_charbuf *body = ccn_charbuf_create();
     int res;
 
-    ccn_name_from_uri(name, CCN_DHCP_CONTENT_URI);
+    ccn_name_from_uri(name, CCN_DHCP_URI);
     sp.type = CCN_CONTENT_DATA;
     sp.freshness = fresh_seconds;
 
@@ -665,6 +756,9 @@ int put_dhcp_content(struct ccn *h, int fresh_seconds, int entry_count, struct c
     ccn_charbuf_destroy(&name);
     ccn_charbuf_destroy(&resultbuf);
 
+#ifdef DEBUG
+    dhcp_debug_fns("put_dhcp_content }\n");
+#endif
     return 0;
 cleanup:
     ccn_charbuf_destroy(&body);
@@ -672,12 +766,18 @@ cleanup:
     ccn_charbuf_destroy(&resultbuf);
     ccn_dhcp_content_destroy(de->next);
 
+#ifdef DEBUG
+    dhcp_debug_fns("put_dhcp_content }\n");
+#endif
     return -1;
 }
 
 /* Receive dhcp content */
 int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ get_dhcp_content\n");
+#endif
     struct ccn_charbuf *name = ccn_charbuf_create();
     struct ccn_charbuf *resultbuf = ccn_charbuf_create();
     struct ccn_parsed_ContentObject pcobuf = {0};
@@ -686,12 +786,15 @@ int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
     size_t length;
     int count = 0;
 
-    ccn_name_from_uri(name, CCN_DHCP_CONTENT_URI);
+    ccn_name_from_uri(name, CCN_DHCP_URI);
 
     res = ccn_get(h, name, NULL, msecs, resultbuf, &pcobuf, NULL, 0);
     if (res < 0) {
         ccn_charbuf_destroy(&name);
         ccn_charbuf_destroy(&resultbuf);
+#ifdef DEBUG
+        dhcp_debug_fns("get_dhcp_content }\n");
+#endif
         return -1;
     }
 
@@ -703,6 +806,9 @@ int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
     ccn_charbuf_destroy(&name);
     ccn_charbuf_destroy(&resultbuf);
 
+#ifdef DEBUG
+    dhcp_debug_fns("get_dhcp_content }\n");
+#endif
     return count;
 }
 
@@ -710,44 +816,82 @@ int get_dhcp_content(struct ccn *h, struct ccn_dhcp_entry *tail, int msecs)
 
 
 int compare_bufs(unsigned char *one, int l1, unsigned char *two, int l2){
+#ifdef DEBUG
+    dhcp_debug_fns("{ compare_bufs\n");
+#endif
     int x;
     if(l1 != l2){
+#ifdef DEBUG
+        dhcp_debug_fns("compare_bufs }\n");
+#endif
         return -1;
     }
     for(x = 0; x< l1; x++){
         if(one[x] != two[x])
-            return -1;
+#ifdef DEBUG
+            dhcp_debug_fns("compare_bufs }\n");
+#endif
+        return -1;
     }
+#ifdef DEBUG
+    dhcp_debug_fns("compare_bufs }\n");
+#endif
     return 0;
 }
 //repeated to supress useless warnings
 int compare_chars(const char *one, int l1, const char *two, int l2){
+#ifdef DEBUG
+    dhcp_debug_fns("{ compare_chars\n");
+#endif
     int x;
     if(l1 != l2){
+#ifdef DEBUG
+        dhcp_debug_fns("compare_chars }\n");
+#endif
         return -1;
     }
     for(x = 0; x< l1; x++){
         if(one[x] != two[x])
-            return -1;
+#ifdef DEBUG
+            dhcp_debug_fns("compare_chars }\n");
+#endif
+        return -1;
     }
+#ifdef DEBUG
+    dhcp_debug_fns("compare_chars }\n");
+#endif
     return 0;
 }
 
 int compare_entries(struct ccn_dhcp_entry *one, struct ccn_dhcp_entry *two){
+#ifdef DEBUG
+    dhcp_debug_fns("{ compare_entries\n");
+#endif
     if((compare_bufs(one->name_prefix->buf, one->name_prefix->length, two->name_prefix->buf, two->name_prefix->length) == 0) &&
-        (compare_chars(one->address, 20, two->address, 20) == 0) &&
-        (compare_chars(one->port, 10, two->port, 10) == 0))
+            (compare_chars(one->address, 20, two->address, 20) == 0) &&
+            (compare_chars(one->port, 10, two->port, 10) == 0)){
+
+#ifdef DEBUG
+        dhcp_debug_fns("compare_entries }\n");
+#endif
         return 0;
+    }
+#ifdef DEBUG
+    dhcp_debug_fns("compare_entries }\n");
+#endif
     return -1;
 
 }
 
 int update_faces(struct ccn *h, struct mydata *mydata, struct ccn_dhcp_entry *new_entries, int num_new, int add_faces){
+#ifdef DEBUG
+    dhcp_debug_fns("{ update_faces\n");
+#endif
     struct ccn_dhcp_entry *current_new = new_entries;
     struct ccn_dhcp_entry *current_old;
     int test = 0;
     int x, y;
-    
+
     for(x=0; x < num_new; x++){
         current_new = current_new->next;
         current_old = mydata->entries;
@@ -763,13 +907,16 @@ int update_faces(struct ccn *h, struct mydata *mydata, struct ccn_dhcp_entry *ne
             current_old->next = calloc(1, sizeof(*current_new));
             memcpy(current_old->next, current_new, sizeof(*current_new));
             mydata->num_entries++;
-            
+
             //we need to add this face because we have not seen it yet
             if(add_faces == 1)
                 add_new_face(h, current_new->name_prefix, current_new->address, current_new->port);
         }
     }
 
+#ifdef DEBUG
+    dhcp_debug_fns("update_faces }\n");
+#endif
     return 1;
 
 }
@@ -777,10 +924,13 @@ int update_faces(struct ccn *h, struct mydata *mydata, struct ccn_dhcp_entry *ne
 /* We received a response to one of our interests -- not used yet nor tested*/
 enum ccn_upcall_res
 incoming_content(
-    struct ccn_closure *selfp,
-    enum ccn_upcall_kind kind,
-    struct ccn_upcall_info *info)
+        struct ccn_closure *selfp,
+        enum ccn_upcall_kind kind,
+        struct ccn_upcall_info *info)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ incoming_content\n");
+#endif
     struct mydata *md = selfp->data;
     const unsigned char *ccnb = NULL;
     size_t ccnb_size = 0;
@@ -791,12 +941,24 @@ incoming_content(
     struct ccn_dhcp_entry new_val = {0};
     struct ccn_dhcp_entry *tail = &new_val;
 
-    if (kind == CCN_UPCALL_FINAL)
+    if (kind == CCN_UPCALL_FINAL){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_content }\n");
+#endif
         return(CCN_UPCALL_RESULT_OK);
-    if (kind == CCN_UPCALL_INTEREST_TIMED_OUT)
+    }
+    if (kind == CCN_UPCALL_INTEREST_TIMED_OUT){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_content }\n");
+#endif
         return(CCN_UPCALL_RESULT_OK);
-    if ((kind != CCN_UPCALL_CONTENT && kind != CCN_UPCALL_CONTENT_UNVERIFIED) || md == NULL)
+    }
+    if ((kind != CCN_UPCALL_CONTENT && kind != CCN_UPCALL_CONTENT_UNVERIFIED) || md == NULL){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_content }\n");
+#endif
         return(CCN_UPCALL_RESULT_ERR);
+    }
 
     ccnb = info->content_ccnb;
     ccnb_size = info->pco->offset[CCN_PCO_E];
@@ -810,11 +972,17 @@ incoming_content(
 
     update_faces(info->h, selfp->data, tail, count, 1);
 
-//    ccn_set_run_timeout(info->h, 0);
+    //    ccn_set_run_timeout(info->h, 0);
+#ifdef DEBUG
+    dhcp_debug_fns("incoming_content }\n");
+#endif
     return(CCN_UPCALL_RESULT_OK);
 }
 
 void print_entries(struct mydata *mydata){
+#ifdef DEBUG
+    dhcp_debug_fns("{ print_entries\n");
+#endif
     if((mydata->debug_flag == 1 && mydata->is_server == 1)||(mydata->debug_flag == 0 && mydata->is_server == 0)){
         struct ccn_dhcp_entry *current_new = mydata->entries;
         int x;
@@ -823,42 +991,67 @@ void print_entries(struct mydata *mydata){
             printf("\t%d: %s %s %s\n",x , ccn_charbuf_as_string(current_new->name_prefix), current_new->address, current_new->port);
         }
     }
+#ifdef DEBUG
+    dhcp_debug_fns("print_entries }\n");
+#endif
 }
 
 /* Someone asked for our dhcp entries, so we will respond with them -- only if we are a server*/
 enum ccn_upcall_res
 incoming_interest(
-    struct ccn_closure *selfp,
-    enum ccn_upcall_kind kind,
-    struct ccn_upcall_info *info)
+        struct ccn_closure *selfp,
+        enum ccn_upcall_kind kind,
+        struct ccn_upcall_info *info)
 {
+#ifdef DEBUG
+    dhcp_debug_fns("{ incoming_interest\n");
+#endif
     int res;
     struct mydata *md = selfp->data;
 
     //if we are not a server hopefully they will get a response from our non-stale data
-    if(md->is_server != 1)
+    if(md->is_server != 1){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_interest }\n");
+#endif
         return(CCN_UPCALL_RESULT_OK);
+    }
 
     if(md->debug_flag == 1)
         printf("incoming interest\n");
-    if (kind == CCN_UPCALL_FINAL)
+    if (kind == CCN_UPCALL_FINAL){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_interest }\n");
+#endif
         return(CCN_UPCALL_RESULT_OK);
-    if (kind == CCN_UPCALL_CONSUMED_INTEREST)
+    }
+    if (kind == CCN_UPCALL_CONSUMED_INTEREST){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_interest }\n");
+#endif
         return(CCN_UPCALL_RESULT_OK);
-    if (kind != CCN_UPCALL_INTEREST || md == NULL || md->num_entries == 0)
+    }
+    if (kind != CCN_UPCALL_INTEREST || md == NULL || md->num_entries == 0){
+#ifdef DEBUG
+        dhcp_debug_fns("incoming_interest }\n");
+#endif
         return(CCN_UPCALL_RESULT_ERR);
+    }
 
-    
+
     print_entries(md);
     if(md->debug_flag == 1)
         printf("putting content, this many entries: %d\n", md->num_entries);
-    
+
     res = put_dhcp_content(info->h, md->freshness_seconds, md->num_entries, md->entries);
 
     if (res < 0)
         ccn_perror(info->h, "Cannot publish DHCP content.");
 
     ccn_set_run_timeout(info->h, 0);
+#ifdef DEBUG
+    dhcp_debug_fns("incoming_interest }\n");
+#endif
     return(CCN_UPCALL_RESULT_INTEREST_CONSUMED);
 }
 
@@ -913,8 +1106,8 @@ int main(int argc, char **argv)
                 fresh_secs = atoi(optarg);
                 break;
             case 'c':
-                 client_timeout = atoi(optarg);
-                 break;
+                client_timeout = atoi(optarg);
+                break;
             case 'd':
                 mydata->debug_flag = 1;
                 break;
@@ -941,7 +1134,7 @@ int main(int argc, char **argv)
     in_interest = calloc(1, sizeof(*in_interest));
     in_interest->p = &incoming_interest;
     in_interest->data = mydata;
-    
+
     //setup connection to the ccndaemon and multicast group
     h = ccn_create();
     res = ccn_connect(h, NULL);
@@ -981,17 +1174,26 @@ int main(int argc, char **argv)
 
     print_entries(mydata);
     //now we setup a callback function that will respond to further queries
-    ccn_name_from_uri(name, CCN_DHCP_CONTENT_URI);
+    ccn_name_from_uri(name, CCN_DHCP_URI);
     ccn_set_interest_filter(h, name, in_interest);
 
 
     //we will schedule a periodic update that will look for the newest dhcp information
     //and do leases for the appropriate length of time
     //XXX:TODO
-    
+
     //main loooooooo...oooooop
+#ifdef DEBUG
+    dhcp_debug_fns("We are going into the run loop\n");
+#endif
     while(1){
+#ifdef DEBUG
+        dhcp_debug_fns("{ run loop\n");
+#endif
         ccn_run(h, -1);
+#ifdef DEBUG
+        dhcp_debug_fns("run loop }\n");
+#endif
     }
 
     ccn_destroy(&h);

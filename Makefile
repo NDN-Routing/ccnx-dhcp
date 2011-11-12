@@ -3,6 +3,7 @@ LD = gcc -pipe
 
 STRIP = strip
 CFLAGS = -pipe
+#CFLAGS = -pipe -DDEBUG
 
 CCNX_DIR = ~/ccnx
 INCLUDES = -I $(CCNX_DIR)/include
