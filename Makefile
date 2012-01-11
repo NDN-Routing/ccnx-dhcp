@@ -9,7 +9,7 @@ CCNX_DIR = ~/ccnx
 INCLUDES = -I $(CCNX_DIR)/include
 LIBS = $(CCNX_DIR)/lib/libccn.a -lcrypto
 
-SRCS_DHCP = ccndhcpnode.c
+SRCS_DHCP = dhcp_helper.c ccndhcpnode.c
 PROG_DHCP = ccndhcpnode
 
 OBJS_DHCP = ${SRCS_DHCP:.c=.o}
